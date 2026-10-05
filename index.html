@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mercado Amarillo — Calendario de trabajo</title>
+<script>try{var t=localStorage.getItem('ma-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}if(/[?&]light/.test(location.search))document.documentElement.dataset.theme='light'</script>
+<style>
+:root{
+  --bg:#101820; --card:#1b2530; --line:#2b3744; --wkend:rgba(255,255,255,.025);
+  --amber:#ffb23d; --amber-text:#ffb23d; --on-amber:#101820;
+  --blue:#7fb2e5; --on-blue:#101820;
+  --text:#f5f5f2; --muted:#9aa8b5; --faint:#6b7987;
+  --wheel:#0a0f14; --wheel-text:#f5f5f2;
+  --pitch:40px;
+}
+:root[data-theme="light"]{
+  --bg:#ffffff; --card:#f2f4f6; --line:#dbe0e5; --wkend:rgba(16,24,32,.035);
+  --amber-text:#9a5b00; --blue:#2f6db0; --on-blue:#ffffff;
+  --text:#101820; --muted:#566574; --faint:#8b97a3;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);overflow:hidden}
+body{font-family:'Segoe UI',Inter,system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;color:var(--text);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center}
+
+/* ───────── columna izquierda ───────── */
+.side{position:absolute;left:56px;top:56px;bottom:56px;width:300px;display:flex;flex-direction:column}
+.eyebrow{display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.eyebrow::before{content:"";flex:none;width:30px;height:8px;background:var(--amber)}
+.side h1{margin-top:22px;font-size:70px;line-height:.98;font-weight:700;letter-spacing:-.025em}
+.hmwrap{margin-top:26px}
+.hmwrap p{margin-top:12px;font-size:18px;font-weight:300;color:var(--muted);line-height:1.3}
+.hmwrap b{display:block;color:var(--text);font-weight:700}
+.hm{display:flex;gap:5px;flex:none}
+.wheel{--h:66px;width:46px;height:var(--h);overflow:hidden;position:relative;background:var(--wheel);border:1px solid var(--line);color:var(--wheel-text);font-family:'Cascadia Mono',Consolas,'SFMono-Regular',ui-monospace,monospace;font-weight:700;font-size:48px;line-height:var(--h);text-align:center}
+.wheel::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(0,0,0,.55),transparent 28%,transparent 72%,rgba(0,0,0,.55));pointer-events:none}
+.wheel.last{background:var(--amber);color:var(--on-amber)}
+.reel{will-change:transform;transition:transform 1.6s cubic-bezier(.22,.8,.2,1) calc(var(--i)*.12s)}
+.reel span{display:block;height:var(--h)}
+.hm.on .reel{transform:translateY(calc(var(--d)*var(--h)*-1))}
+.nums{margin-top:30px;display:grid;gap:16px}
+.nums dt{font-size:38px;line-height:1;font-weight:700;color:var(--amber-text)}
+.nums dd{margin-top:4px;font-size:17px;font-weight:300;color:var(--muted);line-height:1.3}
+.legend{margin-top:auto}
+.legend h2{font-size:14px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.legend ul{list-style:none}
+.legend li{display:flex;align-items:center;gap:14px;font-size:17px;line-height:1.25;padding:4px 0}
+.legend ul + ul{margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
+.sw{flex:none;width:34px;height:18px}
+.sw.build{background:var(--amber)}
+.sw.post{border:2px solid var(--amber)}
+.sw.ads{background:var(--blue)}
+.sw.you{border:2px dashed var(--muted)}
+.ic{flex:none;width:34px;display:flex;justify-content:center}
+.ic i,.m i{display:block;flex:none;width:11px;height:11px}
+.k-entrega{background:var(--amber)}
+.k-reunion{background:var(--amber);transform:rotate(45deg)}
+.k-you{border:2px solid var(--muted);border-radius:50%}
+.legend .note{margin-top:12px;font-size:15px;font-weight:300;color:var(--muted);line-height:1.35}
+
+/* ───────── calendario ───────── */
+.cal{position:absolute;left:396px;right:56px;top:56px;bottom:56px;display:flex;flex-direction:column}
+.wk{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));height:44px;align-items:center;font-size:16px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.wk span{padding-left:12px}
+.grid{border-top:1px solid var(--line);border-left:1px solid var(--line)}
+.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.bg{border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.bg.we{background:var(--wkend)}
+.bg.out{background:repeating-linear-gradient(135deg,transparent 0 10px,var(--wkend) 10px 11px)}
+.bg.today{box-shadow:inset 0 0 0 3px var(--amber)}
+.dh{padding:10px 12px 0;display:flex;justify-content:space-between;align-items:baseline;pointer-events:none}
+.n{font-size:30px;line-height:1;font-weight:700}
+.n small{font-size:15px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin-left:4px}
+.dn{font-size:14px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+.dn.edge{color:var(--amber-text)}
+.dn.hoy{background:var(--amber);color:var(--on-amber);padding:2px 7px}
+.out .n{color:var(--faint)}
+.mk{padding:8px 12px 4px;display:flex;flex-direction:column;gap:5px;align-self:start;pointer-events:none}
+.m{display:flex;gap:9px;align-items:flex-start;font-size:17px;font-weight:600;line-height:1.2}
+.m i{margin-top:5px}
+.m.note{color:var(--faint);font-weight:600}
+.m.note i{display:none}
+.bar{box-sizing:border-box;min-width:0;align-self:center;margin:0 5px;height:34px;padding:0 11px;border:2px solid transparent;line-height:30px;font-size:18px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar.build{background:var(--amber);border-color:var(--amber);color:var(--on-amber)}
+.bar.post{border-color:var(--amber);color:var(--amber-text)}
+.bar.ads{background:var(--blue);border-color:var(--blue);color:var(--on-blue)}
+.bar.you{border:2px dashed var(--muted);color:var(--text);font-weight:600}
+.bar.cl{margin-left:0;border-left-width:0;padding-left:16px}
+.bar.cr{margin-right:0;border-right-width:0}
+
+/* ───────── fuera de la hoja ───────── */
+html.static .reel{transition:none!important;transform:translateY(calc(var(--d)*var(--h)*-1))!important}
+@media (prefers-reduced-motion:reduce){.reel{transition:none!important}}
+@media print{
+  @page{size:1920px 1080px;margin:0}
+  html,body{overflow:visible;height:auto;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .stage{position:relative;left:0;top:0;transform:none!important}
+  .reel{transition:none!important;transform:translateY(calc(var(--d)*var(--h)*-1))!important}
+}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+
+<aside class="side">
+  <div class="eyebrow">Calendario de trabajo</div>
+  <h1>Octubre<br>2026</h1>
+  <div class="hmwrap">
+    <div class="hm" data-v="0025" role="img" aria-label="25 días de trabajo"></div>
+    <p>días de trabajo<b>5 → 29 de octubre</b></p>
+  </div>
+  <dl class="nums">
+    <div><dt>47</dt><dd>piezas creativas, en 3 bloques</dd></div>
+    <div><dt>48 h</dt><dd>para aprobar cada entrega</dd></div>
+    <div><dt>USD 200</dt><dd>de pauta en el primer test</dd></div>
+  </dl>
+  <div class="legend">
+    <h2>Cómo leerlo</h2>
+    <ul>
+      <li><span class="sw build"></span>Construimos</li>
+      <li><span class="sw post"></span>Publicación en Instagram</li>
+      <li><span class="sw ads"></span>Test de Meta Ads</li>
+    </ul>
+    <ul>
+      <li><span class="ic"><i class="k-entrega"></i></span>Entrega</li>
+      <li><span class="ic"><i class="k-reunion"></i></span>Reunión o pago</li>
+      <li><span class="ic"><i class="k-you"></i></span>MERCADO AMARILLO entrega:</li>
+    </ul>
+    <p class="note">Arrancamos al recibir el pago hoy, lunes 5. Materiales y accesos: martes 6.</p>
+  </div>
+</aside>
+
+<main class="cal">
+  <div class="wk" id="wk"></div>
+  <div class="grid" id="grid"></div>
+</main>
+
+</div>
+
+<script>
+(function(){
+  var stage=document.getElementById('stage');
+  var isStatic=/[?&]static/.test(location.search)||matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(isStatic)document.documentElement.classList.add('static');
+
+  /* ── datos del plan: cambia fechas o textos aquí ── */
+  var D=function(s){var p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2])};
+  var DAY=86400000;
+  var FIRST=D('2026-10-05');            // lunes de la primera semana mostrada
+  var WEEKS=5;
+  var DAY1=D('2026-10-05'), DAY25=D('2026-10-29');
+  var MONTHS=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+  var phases=[
+    {k:'build',s:'2026-10-05',e:'2026-10-09',t:'Diagnóstico y plan'},
+    {k:'build',s:'2026-10-09',e:'2026-10-11',t:'Dirección creativa'},
+    {k:'build',s:'2026-10-09',e:'2026-10-18',t:'Ecosistema: Instagram, Facebook y Meta Business'},
+    {k:'build',s:'2026-10-13',e:'2026-10-25',t:'Producción de las 47 piezas'},
+    {k:'build',s:'2026-10-26',e:'2026-10-27',t:'Ajustes finales'},
+    {k:'post', s:'2026-10-20',e:'2026-10-29',t:'Publicación en Instagram'},
+    {k:'ads',  s:'2026-10-25',e:'2026-11-01',t:'Test de Meta Ads · USD 200'},
+    {k:'build',s:'2026-10-27',e:'2026-10-29',t:'Tú: 7 creativos a tu landing'}
+  ];
+  var marks=[
+    {d:'2026-10-05',k:'reunion',t:'Arranque + 1er pago'},
+    {d:'2026-10-06',k:'you',    t:'Materiales y accesos'},
+    {d:'2026-10-09',k:'entrega',t:'Entrega 1 · Diagnóstico y plan'},
+    {d:'2026-10-11',k:'entrega',t:'Entrega 2 · Dirección creativa'},
+    {d:'2026-10-13',k:'you',    t:'Apruebas la dirección creativa'},
+    {d:'2026-10-12',k:'note',   t:'Festivo'},
+    {d:'2026-10-18',k:'entrega',t:'Entrega 3 · Ecosistema listo'},
+    {d:'2026-10-19',k:'reunion',t:'Reunión + 2º pago'},
+    {d:'2026-10-19',k:'entrega',t:'Entrega Bloque 1'},
+    {d:'2026-10-23',k:'entrega',t:'Entrega Bloque 2'},
+    {d:'2026-10-25',k:'entrega',t:'Entrega Bloque 3'},
+    {d:'2026-10-27',k:'entrega',t:'Entrega final'},
+    {d:'2026-11-02',k:'entrega',t:'Reporte del test'}
+  ];
+
+  var idx=function(d){return Math.round((d-FIRST)/DAY)};
+  var el=function(tag,cls,html){var n=document.createElement(tag);if(cls)n.className=cls;if(html!==undefined)n.innerHTML=html;return n};
+
+  /* días de la semana */
+  var wk=document.getElementById('wk');
+  ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'].forEach(function(n){wk.appendChild(el('span','',n))});
+
+  var today=new Date();today=new Date(today.getFullYear(),today.getMonth(),today.getDate());
+  var grid=document.getElementById('grid');
+
+  for(var w=0;w<WEEKS;w++){
+    var w0=w*7,w1=w0+6;
+    var week=el('div','week');
+
+    /* empaquetar barras en carriles */
+    var segs=phases.map(function(p){return {p:p,a:idx(D(p.s)),b:idx(D(p.e))}})
+      .filter(function(x){return x.b>=w0&&x.a<=w1});
+    segs.sort(function(x,y){return phases.indexOf(x.p)-phases.indexOf(y.p)});   // de arriba abajo, en el orden del proceso
+    var lanes=[];
+    segs.forEach(function(s){
+      s.c0=Math.max(s.a,w0)-w0;s.c1=Math.min(s.b,w1)-w0;
+      var l=0;while(lanes[l]!==undefined&&lanes[l]>=s.c0)l++;
+      lanes[l]=s.c1;s.l=l;
+    });
+    week.style.gridTemplateRows='auto auto repeat('+Math.max(lanes.length,1)+',var(--pitch)) 10px';
+
+    /* fondos de cada día */
+    var cells=[];
+    for(var c=0;c<7;c++){
+      var date=new Date(FIRST.getTime()+(w0+c)*DAY);
+      date=new Date(date.getFullYear(),date.getMonth(),date.getDate());
+      var inOct=date.getMonth()===9;
+      var bg=el('div','bg'+(c>4?' we':'')+(inOct?'':' out'));
+      bg.style.gridColumn=(c+1);bg.style.gridRow='1 / -1';
+      if(!isStatic&&date.getTime()===today.getTime())bg.classList.add('today');
+      week.appendChild(bg);
+      cells.push(date);
+    }
+
+    /* fecha + día del proyecto + hitos */
+    cells.forEach(function(date,c){
+      var inOct=date.getMonth()===9;
+      var n=date.getDate()+(inOct?'':'<small>'+MONTHS[date.getMonth()]+'</small>');
+      var dh=el('div','dh','<span class="n'+(inOct?'':' out')+'">'+n+'</span>');
+      var num=Math.round((date-DAY1)/DAY)+1;
+      if(num>=1&&num<=25){
+        var dn=el('span','dn'+((num===1||num===25)?' edge':''),'Día '+num);
+        if(!isStatic&&date.getTime()===today.getTime()){dn.className='dn hoy';dn.textContent='Hoy · Día '+num}
+        dh.appendChild(dn);
+      }else if(!isStatic&&date.getTime()===today.getTime()){
+        dh.appendChild(el('span','dn hoy','Hoy'));
+      }
+      dh.style.gridColumn=(c+1);dh.style.gridRow=1;
+      week.appendChild(dh);
+
+      var mk=el('div','mk');
+      marks.forEach(function(m){
+        var md=D(m.d);
+        if(md.getTime()===date.getTime())mk.appendChild(el('div','m '+m.k,'<i class="k-'+m.k+'"></i><span>'+m.t+'</span>'));
+      });
+      mk.style.gridColumn=(c+1);mk.style.gridRow=2;
+      week.appendChild(mk);
+    });
+
+    /* barras de fase */
+    segs.forEach(function(s){
+      var cls='bar '+s.p.k+(s.a<w0?' cl':'')+(s.b>w1?' cr':'');
+      var bar=el('div',cls);
+      bar.textContent=s.p.t;bar.title=s.p.t;
+      bar.style.gridColumn=(s.c0+1)+' / '+(s.c1+2);
+      bar.style.gridRow=(3+s.l);
+      week.appendChild(bar);
+    });
+    grid.appendChild(week);
+  }
+
+  /* horómetro */
+  [].forEach.call(document.querySelectorAll('.hm'),function(hm){
+    hm.dataset.v.split('').forEach(function(ch,i,a){
+      var wh=el('div','wheel'+(i===a.length-1?' last':''));
+      wh.style.setProperty('--d',ch);wh.style.setProperty('--i',i);
+      var r=el('div','reel');
+      for(var k=0;k<10;k++)r.appendChild(el('span','',k));
+      wh.appendChild(r);hm.appendChild(wh);
+    });
+    requestAnimationFrame(function(){requestAnimationFrame(function(){hm.classList.add('on')})});
+  });
+
+  /* escala y teclas */
+  function fit(){var s=Math.min(innerWidth/1920,innerHeight/1080);stage.style.transform='translate(-50%,-50%) scale('+s+')'}
+  addEventListener('resize',fit);fit();
+  addEventListener('keydown',function(e){
+    if(e.metaKey||e.ctrlKey||e.altKey)return;
+    if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}
+    else if(e.key==='t'||e.key==='T'){
+      var t=document.documentElement.dataset.theme==='light'?'dark':'light';
+      document.documentElement.dataset.theme=t;try{localStorage.setItem('ma-theme',t)}catch(x){}
+    }
+  });
+})();
+</script>
+</body>
+</html>
