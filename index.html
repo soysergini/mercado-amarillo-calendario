@@ -22,7 +22,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--bg);overflow:hidden}
 body{font-family:'Segoe UI',Inter,system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;color:var(--text);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
-.stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center}
+.stage{position:fixed;left:0;top:0;width:1920px;height:1080px;transform-origin:top left}
 
 /* ───────── columna izquierda ───────── */
 .side{position:absolute;left:56px;top:56px;bottom:56px;width:300px;display:flex;flex-direction:column}
@@ -267,8 +267,33 @@ html.static .reel{transition:none!important;transform:translateY(calc(var(--d)*v
   });
 
   /* escala y teclas */
-  function fit(){var s=Math.min(innerWidth/1920,innerHeight/1080);stage.style.transform='translate(-50%,-50%) scale('+s+')'}
-  addEventListener('resize',fit);fit();
+  var fitQueued=false;
+  function fit(){
+    var viewport=window.visualViewport;
+    // Keep pinch zoom available for reading the calendar on a phone.
+    if(viewport&&viewport.scale>1.01)return;
+    var width=viewport?viewport.width:(document.documentElement.clientWidth||innerWidth);
+    var height=viewport?viewport.height:innerHeight;
+    if(width<=0||height<=0)return;
+    var portraitPhone=width<=900&&height>width;
+    var inset=portraitPhone?12:0;
+    var s=Math.min(width/1920,(height-inset*2)/1080);
+    var x=(width-1920*s)/2;
+    var y=portraitPhone?inset:(height-1080*s)/2;
+    stage.style.transform='translate('+x+'px,'+y+'px) scale('+s+')';
+  }
+  function queueFit(){
+    if(fitQueued)return;
+    fitQueued=true;
+    requestAnimationFrame(function(){fitQueued=false;fit()});
+  }
+  ['resize','orientationchange','pageshow','load','DOMContentLoaded'].forEach(function(event){
+    addEventListener(event,queueFit);
+  });
+  if(window.visualViewport)window.visualViewport.addEventListener('resize',queueFit);
+  if(window.ResizeObserver)new ResizeObserver(queueFit).observe(document.documentElement);
+  fit();
+  requestAnimationFrame(queueFit);
   addEventListener('keydown',function(e){
     if(e.metaKey||e.ctrlKey||e.altKey)return;
     if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}
